@@ -1,5 +1,6 @@
 import { DB } from "@/app/libs/DB";
 import {
+  zStudentDeleteBody,
   zStudentGetParam,
   zStudentPostBody,
   zStudentPutBody,
@@ -29,8 +30,9 @@ export const GET = async (request) => {
   if (program !== null) {
     filtered = filtered.filter((std) => std.program === program);
   }
-
-  //filter by student id here
+  if (studentId !== null) {
+    filtered = filtered.filter((std) => std.studentId === studentId);
+  }
 
   return NextResponse.json({ ok: true, students: filtered });
 };
@@ -73,7 +75,7 @@ export const PUT = async (request) => {
     return NextResponse.json(
       {
         ok: false,
-        message: parseResult.error.issues[0].message,
+        message: "Studeent Id must contain 9 characters",
       },
       { status: 400 }
     );
@@ -98,6 +100,32 @@ export const PUT = async (request) => {
 
 export const DELETE = async (request) => {
   //get body and validate it
+  const body = await request.json();
+  const parseResult = zStudentDeleteBody.safeParse(body);
+  if (parseResult.success === false) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: parseResult.error.issues[0].message,
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  const foundIndex = DB.students.findIndex(
+    (std) => std.studentId === body.studentId
+  );
+  if (foundIndex === -1) {
+    return NextResponse.json(
+      { ok: false, message: "Student Id does not exists" },
+      { status: 404 }
+    );
+  }
+  let filtered = DB.students;
+  filtered = filtered.filter((std) => std.studentId !== body.studentId);
+  DB.students = filtered;
 
   //check if student id exist
 
@@ -110,6 +138,6 @@ export const DELETE = async (request) => {
 
   return NextResponse.json({
     ok: true,
-    message: `Student Id xxx has been deleted`,
+    message: `Student Id ${body.studentId} has been deleted`,
   });
 };
