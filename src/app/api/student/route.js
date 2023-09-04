@@ -119,7 +119,7 @@ export const DELETE = async (request) => {
   );
   if (foundIndex === -1) {
     return NextResponse.json(
-      { ok: false, message: "Student Id does not exists" },
+      { ok: false, message: "Student ID does not exist" },
       { status: 404 }
     );
   }
